@@ -1,0 +1,96 @@
+{
+  "description": "Gold test set for retrieval recall + answer faithfulness evaluation.",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "How much does the Team edition cost per user per month?",
+      "expected_answer": "$49 per user per month.",
+      "expected_sources": ["product_overview.md"],
+      "expected_keywords": ["49"]
+    },
+    {
+      "id": "q2",
+      "question": "What uptime SLA does the Enterprise edition offer?",
+      "expected_answer": "A 99.95% uptime SLA.",
+      "expected_sources": ["product_overview.md", "sre_runbook.md"],
+      "expected_keywords": ["99.95"]
+    },
+    {
+      "id": "q3",
+      "question": "Which encryption standard is used for data at rest?",
+      "expected_answer": "Data at rest is encrypted with AES-256.",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["AES-256"]
+    },
+    {
+      "id": "q4",
+      "question": "How long is the free trial and what edition does it cover?",
+      "expected_answer": "A 14-day free trial of the Team edition.",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["14-day", "trial"]
+    },
+    {
+      "id": "q5",
+      "question": "How often is the primary database backed up?",
+      "expected_answer": "Every 6 hours, with backups retained for 30 days.",
+      "expected_sources": ["sre_runbook.md"],
+      "expected_keywords": ["6 hours"]
+    },
+    {
+      "id": "q6",
+      "question": "What should the primary on-call acknowledge a page within?",
+      "expected_answer": "Within 5 minutes.",
+      "expected_sources": ["sre_runbook.md"],
+      "expected_keywords": ["5 minutes"]
+    },
+    {
+      "id": "q7",
+      "question": "Which data sources does Northwind natively support?",
+      "expected_answer": "PostgreSQL, MySQL, Snowflake, BigQuery, and Amazon S3, plus a generic REST connector.",
+      "expected_sources": ["product_overview.md", "onboarding_guide.txt"],
+      "expected_keywords": ["Snowflake", "BigQuery"]
+    },
+    {
+      "id": "q8",
+      "question": "By how much did the Snowflake incremental refresh mode reduce refresh cost?",
+      "expected_answer": "Up to 60% for large tables.",
+      "expected_sources": ["release_notes.docx"],
+      "expected_keywords": ["60%"]
+    },
+    {
+      "id": "q9",
+      "question": "When will the legacy v1 REST API be removed?",
+      "expected_answer": "On 2026-09-30.",
+      "expected_sources": ["release_notes.docx"],
+      "expected_keywords": ["2026-09-30"]
+    },
+    {
+      "id": "q10",
+      "question": "What is the capital of France?",
+      "expected_answer": "NO_ANSWER",
+      "expected_sources": [],
+      "expected_keywords": []
+    },
+    {
+      "id": "q11",
+      "question": "Can I get my money back if I cancel an annual contract?",
+      "expected_answer": "Annual Enterprise contracts may be refunded on a prorated basis within the first 30 days.",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["30 days"]
+    },
+    {
+      "id": "q12",
+      "question": "Who should I contact about a security breach?",
+      "expected_answer": "security@northwind.example, within 1 hour of detection.",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["security@northwind.example"]
+    },
+    {
+      "id": "q13",
+      "question": "What do I do when dashboards are loading slowly?",
+      "expected_answer": "Check the query cache hit rate; a hit rate below 70% means a cache node needs restarting.",
+      "expected_sources": ["sre_runbook.md"],
+      "expected_keywords": ["cache"]
+    }
+  ]
+}

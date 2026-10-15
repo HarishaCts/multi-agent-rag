@@ -1,0 +1,31 @@
+Northwind Analytics - New User Onboarding Guide
+
+Source: Onboarding Handbook
+Author: Customer Success
+Date: 2026-01-28
+Access: public
+
+Welcome to Northwind Analytics. This guide walks a brand-new user through their first
+day on the platform.
+
+Step 1 - Create your account
+Sign up at app.northwind.example using your work email. New accounts start on the
+Starter edition by default. You can upgrade to Team or Enterprise from the billing page.
+
+Step 2 - Connect your first data source
+Go to Settings > Data Sources and click "Add Source". Northwind supports PostgreSQL,
+MySQL, Snowflake, BigQuery, Amazon S3, and a generic REST connector. You will need
+read-only database credentials. Northwind never requires write access to your data.
+
+Step 3 - Build your first dashboard
+Click "New Dashboard", pick a data source, and drag fields onto the canvas. The first
+dashboard is created from a template to help you get started quickly.
+
+Step 4 - Invite teammates
+Admins can invite teammates from Settings > Members. Invited users receive an email
+and must accept within 7 days before the invite expires.
+
+Getting help
+Starter users get community support via the forum. Team users get email support with a
+24-hour response target. Enterprise users get a dedicated success manager and a
+1-hour response target for urgent issues.

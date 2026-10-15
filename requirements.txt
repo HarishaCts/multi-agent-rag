@@ -1,0 +1,27 @@
+# ---------------------------------------------------------------------------
+# Multi-Agent RAG Framework — dependencies
+#
+# The system runs fully OFFLINE with only the "core" group below installed.
+# The other groups are optional upgrade hooks (uncomment what you need).
+# ---------------------------------------------------------------------------
+
+# --- core (required: offline mode works with just these) ---
+numpy>=1.24
+
+# --- document parsing (required to read the sample corpus) ---
+python-docx>=1.1      # reads .docx  (release_notes.docx)
+pypdf>=4.0            # reads .pdf   (only if you add PDF documents)
+
+# --- API server for the React chat UI (required to run the web UI) ---
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9      # needed for file upload (POST /api/upload)
+
+# --- vector database (optional; falls back to pure-Python in-memory store) ---
+qdrant-client>=1.9
+
+# --- cloud LLM + embeddings (optional; needs GOOGLE_API_KEY) ---
+# google-generativeai>=0.7
+
+# --- real cross-encoder re-ranker (optional; large download) ---
+# sentence-transformers>=3.0
