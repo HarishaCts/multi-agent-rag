@@ -20,8 +20,9 @@ python-multipart>=0.0.9      # needed for file upload (POST /api/upload)
 # --- vector database (optional; falls back to pure-Python in-memory store) ---
 qdrant-client>=1.9
 
-# --- cloud LLM + embeddings (optional; needs GOOGLE_API_KEY) ---
-# google-generativeai>=0.7
+# --- cloud LLM + embeddings (needs GOOGLE_API_KEY in .env) ---
+google-generativeai>=0.8
+python-dotenv>=1.0           # loads GOOGLE_API_KEY / RAG_* from a local .env
 
 # --- real cross-encoder re-ranker (optional; large download) ---
 # sentence-transformers>=3.0

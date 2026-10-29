@@ -21,22 +21,30 @@ class OfflineLLM:
 class GeminiLLM:  # pragma: no cover - optional / needs network + key
     available = True
 
-    def __init__(self, model: str = "gemini-2.0-flash"):
+    def __init__(self, model: str = "gemini-2.0-flash", timeout: int = 60):
         import google.generativeai as genai
 
-        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+        # REST transport + timeout: the default gRPC transport hangs behind many
+        # corporate proxies; REST surfaces TLS/network errors instead of stalling.
+        genai.configure(api_key=os.environ["GOOGLE_API_KEY"], transport="rest")
         self._model = genai.GenerativeModel(model)
         self.name = model
+        self.timeout = timeout
 
     def generate(self, system: str, user: str) -> str:
-        resp = self._model.generate_content(f"{system}\n\n{user}")
+        resp = self._model.generate_content(
+            f"{system}\n\n{user}", request_options={"timeout": self.timeout}
+        )
         return resp.text
 
 
 def build_llm(backend: str, gemini_model: str = "gemini-2.0-flash"):
     if backend == "gemini" and os.getenv("GOOGLE_API_KEY"):
         try:
-            return GeminiLLM(gemini_model)
+            llm = GeminiLLM(gemini_model)
+            llm.generate("You are a connectivity probe.", "Reply with: ok")  # probe once
+            return llm
         except Exception as exc:
-            print(f"[llm] Gemini unavailable ({exc}); using offline extractive synthesis.")
+            print(f"[llm] Gemini unavailable ({type(exc).__name__}: {str(exc)[:120]}); "
+                  f"using offline extractive synthesis.")
     return OfflineLLM()

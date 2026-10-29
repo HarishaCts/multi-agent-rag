@@ -82,14 +82,21 @@ are offline; override to use cloud backends:
 | `RAG_TOP_K` | `4` | Chunks returned after re-ranking. |
 | `GOOGLE_API_KEY` | _(unset)_ | Required for any `gemini` backend. |
 
-To use the full PDF-specified stack (Qdrant + Gemini):
+To enable **Gemini** (the PDF's LLM), copy `.env.example` to `.env` and add your
+key — the app loads it automatically (`.env` is gitignored):
 
-```bash
-export RAG_QDRANT_URL="http://localhost:6333"
-export RAG_EMBED_BACKEND="gemini"
-export RAG_LLM_BACKEND="gemini"
-export GOOGLE_API_KEY="your-key"
 ```
+GOOGLE_API_KEY=your-key
+RAG_LLM_BACKEND=gemini
+RAG_EMBED_BACKEND=gemini
+RAG_GEMINI_MODEL=gemini-2.0-flash
+```
+
+Verify it with `python scripts/test_gemini.py`. If Gemini is unreachable (e.g. a
+corporate TLS proxy), the app automatically falls back to the offline path — it
+never crashes. Full details and the TLS-proxy fix: section 7.8 of
+[PROJECT_EXPLAINED.md](PROJECT_EXPLAINED.md). For a real Qdrant server, also set
+`RAG_QDRANT_URL`.
 
 ---
 

@@ -80,19 +80,30 @@ class HashingTfidfEmbedder:
 
 
 class GeminiEmbedder:
-    """Google `text-embedding-004` backend (optional)."""
+    """Google `text-embedding-004` backend (optional).
 
-    def __init__(self, model: str = "text-embedding-004"):
-        import google.generativeai as genai  # noqa: F401
+    Uses the REST transport (the default gRPC transport hangs behind many
+    corporate proxies) and a per-request timeout so a blocked network fails fast
+    instead of stalling ingestion.
+    """
+
+    def __init__(self, model: str = "models/text-embedding-004", timeout: int = 30):
+        import os
+        import google.generativeai as genai
+
+        genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"), transport="rest")
         self._genai = genai
-        self.model = model
+        self.model = model if model.startswith("models/") else f"models/{model}"
+        self.timeout = timeout
         self.dim = 768
 
     def fit(self, texts: list[str]) -> "GeminiEmbedder":
         return self  # cloud embeddings need no corpus statistics
 
     def embed(self, text: str) -> list[float]:
-        r = self._genai.embed_content(model=self.model, content=text)
+        r = self._genai.embed_content(
+            model=self.model, content=text, request_options={"timeout": self.timeout}
+        )
         return r["embedding"]
 
     def embed_many(self, texts: list[str]) -> list[list[float]]:
@@ -100,6 +111,15 @@ class GeminiEmbedder:
 
 
 def build_embedder(backend: str, dim: int):
+    """Build the requested embedder; if Gemini can't be reached, fall back to the
+    offline hashing embedder so the system still runs (dim stays consistent)."""
     if backend == "gemini":
-        return GeminiEmbedder()
+        try:
+            emb = GeminiEmbedder()
+            emb.embed("connectivity check")  # probe once so failures surface here
+            return emb
+        except Exception as exc:  # pragma: no cover - network/credentials dependent
+            print(f"[embeddings] Gemini unavailable ({type(exc).__name__}: "
+                  f"{str(exc)[:120]}); falling back to offline hashing embedder.")
+            return HashingTfidfEmbedder(dim=dim)
     return HashingTfidfEmbedder(dim=dim)

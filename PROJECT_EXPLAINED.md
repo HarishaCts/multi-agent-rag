@@ -233,6 +233,8 @@ limits results to what your role is allowed to see (`ROLE_ACCESS` in
 | `api/server.py` | **FastAPI backend** — a thin web wrapper around `RAGSystem.chat()` that the React UI calls (`/api/chat`, `/api/status`, `/api/ingest`, `/api/reset`). |
 | `ui/` | **The custom React chat app** (Vite). Shows answers with inline citation chips, an ingestion-status badge, and a role selector. See section 7.5. |
 | `scripts/inspect_db.py` | **Vector-DB inspector** — prints collections, chunk counts, per-chunk metadata, text, and embedding vectors. See section 7.6. |
+| `scripts/test_gemini.py` | **Gemini connectivity/key tester** — PASS/FAIL for an embedding + generation call. See section 7.8. |
+| `.env` / `.env.example` | Local secrets (gitignored) / template. Hold `GOOGLE_API_KEY` and the `RAG_*` backend switches. See section 7.8. |
 | `corpus/` | 6 sample documents (a fictional product called "Northwind"). |
 | `eval/test_questions.json` | 13 gold questions with expected answers & sources (incl. one deliberately unanswerable "capital of France" to test abstention). |
 
@@ -529,6 +531,74 @@ content never creates duplicates — it just overwrites.
 
 ---
 
+## 7.8 Enabling the Gemini backend (the PDF's named LLM)
+
+By default the system runs offline (extractive answers, hashed-TF-IDF
+embeddings). You can switch it to use **Google Gemini** — the LLM named in the
+case-study tech stack — for both generation and embeddings. No code changes are
+needed; it's driven by a local `.env` file.
+
+### Setup
+
+1. Get an API key from **Google AI Studio** → https://aistudio.google.com/apikey
+2. Copy `.env.example` to `.env` and fill in your key:
+   ```
+   GOOGLE_API_KEY=your-key-here
+   RAG_LLM_BACKEND=gemini
+   RAG_EMBED_BACKEND=gemini
+   RAG_GEMINI_MODEL=gemini-2.0-flash
+   ```
+3. Install the cloud dependencies (already in requirements):
+   ```powershell
+   pip install -r requirements.txt
+   ```
+4. Verify connectivity and the key with the included tester:
+   ```powershell
+   python scripts\test_gemini.py
+   ```
+   It prints **PASS/FAIL** for an embedding call and a generation call (it never
+   prints your key).
+
+That's it — the next time you run the app or the API server, synthesis uses
+Gemini (abstractive answers) and embeddings use `text-embedding-004`.
+
+> **`.env` is gitignored** (see the repo `.gitignore`) so your key is never
+> committed. Treat an API key like a password; if it's ever exposed, rotate it in
+> AI Studio.
+
+### It never breaks if Gemini is unreachable
+
+On startup the app makes **one tiny probe call** each for embeddings and the LLM.
+If they fail — no network, bad key, or a **corporate TLS-intercepting proxy**
+(which raises `SSLCertVerificationError`) — it logs a clear message and
+**automatically falls back to the fully-offline path**, so the app always runs.
+You'll see something like:
+
+```
+[embeddings] Gemini unavailable (SSLError: ...); falling back to offline hashing embedder.
+[llm] Gemini unavailable (SSLError: ...); using offline extractive synthesis.
+```
+
+**Behind a TLS proxy?** Point Python at your corporate CA bundle so the
+certificate verifies, then Gemini will work:
+
+```powershell
+$env:SSL_CERT_FILE   = "C:\path\to\corporate-ca-bundle.pem"
+$env:REQUESTS_CA_BUNDLE = "C:\path\to\corporate-ca-bundle.pem"
+```
+
+### Where it's wired in the code
+
+- `rag/embeddings.py` — `GeminiEmbedder` (REST transport + timeout) and
+  `build_embedder()` (probe + graceful fallback).
+- `rag/llm.py` — `GeminiLLM` (REST transport + timeout) and `build_llm()`
+  (probe + fallback).
+- `rag/agents/synthesis_agent.py` — the abstractive path is wrapped so a runtime
+  Gemini error still yields a grounded extractive answer.
+- `rag/__init__.py` — loads `.env` before config reads the environment.
+
+---
+
 ## 8. Evaluation results (measured on this machine, 13-question test set)
 
 **Chunking-strategy comparison (full hybrid + rerank pipeline):**
@@ -584,12 +654,13 @@ content never creates duplicates — it just overwrites.
   panel. Backend verified booting + serving; frontend verified building cleanly.
   **(See section 7.5 for how to run it.)**
 
-### ℹ️ One remaining design note (not a gap)
-- **Gemini (the PDF's chosen LLM) is optional, not wired on by default.** The
-  default is the offline extractive path (zero setup, cannot hallucinate). That's
-  a deliberate, sensible choice; the PDF's tech stack lists Gemini, so mention in
-  your write-up that it's a one-env-var switch (`RAG_LLM_BACKEND=gemini`), not a
-  missing feature.
+### ℹ️ One design note (not a gap)
+- **Gemini (the PDF's chosen LLM) is wired in and switch-on via `.env`** (section
+  7.8), with embeddings on `text-embedding-004` and generation on
+  `gemini-2.0-flash`. The default stays offline (zero setup, cannot hallucinate),
+  and if Gemini is unreachable the app **automatically falls back to offline** —
+  so enabling it is safe. In your write-up, note that the full PDF stack (Gemini)
+  is supported, not just the offline reference path.
 
 ---
 

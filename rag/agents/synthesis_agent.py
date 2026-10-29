@@ -105,7 +105,11 @@ class SynthesisAgent:
         ]
 
         if self.llm and getattr(self.llm, "available", False):
-            answer, mode = self._generate_abstractive(query, chunks, citations), "abstractive"
+            try:
+                answer, mode = self._generate_abstractive(query, chunks, citations), "abstractive"
+            except Exception as exc:  # network/credentials failure -> stay grounded
+                answer = self._generate_extractive(query, chunks, citations)
+                mode = f"extractive (Gemini failed: {type(exc).__name__})"
         else:
             answer, mode = self._generate_extractive(query, chunks, citations), "extractive"
 
